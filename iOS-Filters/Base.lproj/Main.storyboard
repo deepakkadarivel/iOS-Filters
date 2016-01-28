@@ -106,6 +106,7 @@
                     <connections>
                         <outlet property="imageView" destination="hqK-IV-nvO" id="pgg-Aq-gnM"/>
                         <outlet property="invertImageView" destination="gY4-bn-yPp" id="6lw-Ua-Yy4"/>
+                        <outlet property="monoImageView" destination="rkf-eq-Dad" id="uWn-3C-Laj"/>
                         <outlet property="sepiaImageView" destination="O4E-Hp-6Tk" id="TIL-sS-4YZ"/>
                     </connections>
                 </viewController>

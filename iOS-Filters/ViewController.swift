@@ -16,6 +16,8 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     
     @IBOutlet weak var sepiaImageView: UIImageView!
     
+    @IBOutlet weak var monoImageView: UIImageView!
+    
     let picker = UIImagePickerController()
     
     var imagePath = ""
@@ -25,13 +27,17 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        let invertTapGestureRecognizer = UITapGestureRecognizer(target: self, action: Selector("invertImage"))
+        let invertTapGestureRecognizer = UITapGestureRecognizer(target: self, action: Selector("invertEffect"))
         invertImageView.userInteractionEnabled = true
         invertImageView.addGestureRecognizer(invertTapGestureRecognizer)
         
-        let sepiaTapGestureRecognizer = UITapGestureRecognizer(target: self, action: Selector("sepiaImage"))
+        let sepiaTapGestureRecognizer = UITapGestureRecognizer(target: self, action: Selector("sepiaEffect"))
         sepiaImageView.userInteractionEnabled = true
         sepiaImageView.addGestureRecognizer(sepiaTapGestureRecognizer)
+        
+        let monoTapGestureRecognizer = UITapGestureRecognizer(target: self, action: Selector("monoEffect"))
+        monoImageView.userInteractionEnabled = true
+        monoImageView.addGestureRecognizer(monoTapGestureRecognizer)
     }
 
     override func viewWillAppear(animated: Bool) {
@@ -43,14 +49,8 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         self.navigationController?.view.backgroundColor = UIColor.clearColor()
     }
     
-    func sepiaImage() {
+    func sepiaEffect() {
         let beginImage = CIImage(image: image)
-//        if let filter = CIFilter(name: "CISepiaTone") {
-//            filter.setValue(beginImage, forKey: kCIInputImageKey)
-//            filter.setValue(0.5, forKey: kCIInputIntensityKey)
-//            let newImage = UIImage(CIImage: filter.outputImage!)
-//            imageView.image = newImage
-//        }
         
         let sepiaColor = [kCIInputIntensityKey: (0.5)]
         let filteredImage = beginImage?.imageByApplyingFilter("CISepiaTone", withInputParameters: sepiaColor)
@@ -58,21 +58,18 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         imageView.image = UIImage(CGImage: renderedImage)
     }
     
-    func invertImage() {
-        imageView.image = self.invert(image)
-        imageView.contentMode = UIViewContentMode.ScaleAspectFit
-        imageView.clipsToBounds = true
+    func monoEffect() {
+        let beginImage = CIImage(image: image)
+        let filteredImage = beginImage?.imageByApplyingFilter("CIPhotoEffectMono", withInputParameters: nil)
+        let renderedImage = context.createCGImage(filteredImage!, fromRect: (filteredImage?.extent)!)
+        imageView.image = UIImage(CGImage: renderedImage)
     }
     
-    func invert(image: UIImage) -> UIImage {
+    func invertEffect() {
         let beginImage = CIImage(image: image)
-        if let filter = CIFilter(name: "CIColorInvert") {
-            filter.setValue(beginImage, forKey: kCIInputImageKey)
-            let newImage = UIImage(CIImage: filter.outputImage!)
-            return newImage
-        } else {
-            return UIImage(CIImage: beginImage!)
-        }
+        let filteredImage = beginImage?.imageByApplyingFilter("CIColorInvert", withInputParameters: nil)
+        let renderedImage = context.createCGImage(filteredImage!, fromRect: (filteredImage?.extent)!)
+        imageView.image = UIImage(CGImage: renderedImage)
     }
 
     @IBAction func applyFilter(sender: AnyObject) {
@@ -149,13 +146,17 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     func imagePickerController(picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : AnyObject]) {
         self.dismissViewControllerAnimated(true, completion: nil)
         let tempImage = info[UIImagePickerControllerOriginalImage] as! UIImage
-        // save your image here into Document Directory
+        
+        self.setThumb(tempImage)
+        
+    }
+    
+    func setThumb(tempImage: UIImage) {
         self.imageView.image = tempImage
+        self.image = tempImage
         self.invertImageView.image = tempImage
         self.sepiaImageView.image = tempImage
-        self.image = tempImage
-//        self.invertImageView.image = self.invert(invertImageView.image!)
-        
+        self.monoImageView.image = tempImage
     }
 }
 
