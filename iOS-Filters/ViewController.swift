@@ -12,6 +12,9 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
 
     @IBOutlet weak var imageView: UIImageView!
     private var image: UIImage!
+    @IBOutlet weak var invertImageView: UIImageView!
+    
+    @IBOutlet weak var sepiaImageView: UIImageView!
     
     let picker = UIImagePickerController()
     
@@ -21,7 +24,14 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
+
+        let invertTapGestureRecognizer = UITapGestureRecognizer(target: self, action: Selector("invertImage"))
+        invertImageView.userInteractionEnabled = true
+        invertImageView.addGestureRecognizer(invertTapGestureRecognizer)
+        
+        let sepiaTapGestureRecognizer = UITapGestureRecognizer(target: self, action: Selector("sepiaImage"))
+        sepiaImageView.userInteractionEnabled = true
+        sepiaImageView.addGestureRecognizer(sepiaTapGestureRecognizer)
     }
 
     override func viewWillAppear(animated: Bool) {
@@ -31,6 +41,38 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         self.navigationController?.navigationBar.topItem!.title = "Filter"
         self.navigationController?.navigationBar.translucent = true
         self.navigationController?.view.backgroundColor = UIColor.clearColor()
+    }
+    
+    func sepiaImage() {
+        let beginImage = CIImage(image: image)
+//        if let filter = CIFilter(name: "CISepiaTone") {
+//            filter.setValue(beginImage, forKey: kCIInputImageKey)
+//            filter.setValue(0.5, forKey: kCIInputIntensityKey)
+//            let newImage = UIImage(CIImage: filter.outputImage!)
+//            imageView.image = newImage
+//        }
+        
+        let sepiaColor = [kCIInputIntensityKey: (0.5)]
+        let filteredImage = beginImage?.imageByApplyingFilter("CISepiaTone", withInputParameters: sepiaColor)
+        let renderedImage = context.createCGImage(filteredImage!, fromRect: (filteredImage?.extent)!)
+        imageView.image = UIImage(CGImage: renderedImage)
+    }
+    
+    func invertImage() {
+        imageView.image = self.invert(image)
+        imageView.contentMode = UIViewContentMode.ScaleAspectFit
+        imageView.clipsToBounds = true
+    }
+    
+    func invert(image: UIImage) -> UIImage {
+        let beginImage = CIImage(image: image)
+        if let filter = CIFilter(name: "CIColorInvert") {
+            filter.setValue(beginImage, forKey: kCIInputImageKey)
+            let newImage = UIImage(CIImage: filter.outputImage!)
+            return newImage
+        } else {
+            return UIImage(CIImage: beginImage!)
+        }
     }
 
     @IBAction func applyFilter(sender: AnyObject) {
@@ -109,7 +151,11 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         let tempImage = info[UIImagePickerControllerOriginalImage] as! UIImage
         // save your image here into Document Directory
         self.imageView.image = tempImage
+        self.invertImageView.image = tempImage
+        self.sepiaImageView.image = tempImage
         self.image = tempImage
+//        self.invertImageView.image = self.invert(invertImageView.image!)
+        
     }
 }
 
