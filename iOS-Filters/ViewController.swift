@@ -8,15 +8,12 @@
 
 import UIKit
 
-class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UIPickerViewDataSource, UIPickerViewDelegate {
 
     @IBOutlet weak var imageView: UIImageView!
     private var image: UIImage!
-    @IBOutlet weak var invertImageView: UIImageView!
     
-    @IBOutlet weak var sepiaImageView: UIImageView!
-    
-    @IBOutlet weak var monoImageView: UIImageView!
+    @IBOutlet weak var filterPickerView: UIPickerView!
     
     let picker = UIImagePickerController()
     
@@ -24,20 +21,13 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     
     let context = CIContext(options: nil)
     
+    let pickerData = ["SepiaEffect", "MonoEffect", "InstantEffect", "ChromeEffect", "FadeEffect", "MonochromeEffect"]
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        let invertTapGestureRecognizer = UITapGestureRecognizer(target: self, action: Selector("invertEffect"))
-        invertImageView.userInteractionEnabled = true
-        invertImageView.addGestureRecognizer(invertTapGestureRecognizer)
-        
-        let sepiaTapGestureRecognizer = UITapGestureRecognizer(target: self, action: Selector("sepiaEffect"))
-        sepiaImageView.userInteractionEnabled = true
-        sepiaImageView.addGestureRecognizer(sepiaTapGestureRecognizer)
-        
-        let monoTapGestureRecognizer = UITapGestureRecognizer(target: self, action: Selector("monoEffect"))
-        monoImageView.userInteractionEnabled = true
-        monoImageView.addGestureRecognizer(monoTapGestureRecognizer)
+        filterPickerView.dataSource = self
+        filterPickerView.delegate = self
     }
 
     override func viewWillAppear(animated: Bool) {
@@ -49,25 +39,59 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         self.navigationController?.view.backgroundColor = UIColor.clearColor()
     }
     
+    func numberOfComponentsInPickerView(pickerView: UIPickerView) -> Int {
+        return 1
+    }
+    
+    func pickerView(pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+        return pickerData.count
+    }
+    
+    func pickerView(pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+        return pickerData[row]
+    }
+    
+    func pickerView(pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+        switch pickerData[row] {
+        case "SepiaEffect" : rangefilter("CISepiaTone", range: 0.5)
+            break
+        case "MonoEffect" : self.filter("CIPhotoEffectMono")
+            break
+        case "InstantEffect" : self.filter("CIPhotoEffectInstant")
+            break
+        case "ChromeEffect" : self.filter("CIPhotoEffectChrome")
+            break
+        case "FadeEffect" : self.filter("CIPhotoEffectFade")
+            break
+        case "MonochromeEffect" : rangefilter("CIColorMonochrome", range: 0.5)
+        default : break
+        }
+    }
+    
+    func filter(filter: String) {
+        if image != nil {
+            let beginImage = CIImage(image: image)
+            let filteredImage = beginImage?.imageByApplyingFilter(filter, withInputParameters: nil)
+            let renderedImage = context.createCGImage(filteredImage!, fromRect: (filteredImage?.extent)!)
+            imageView.image = UIImage(CGImage: renderedImage)
+        }
+    }
+    
+    func rangefilter(filter: String, range: NSNumber) {
+        if image != nil {
+            let beginImage = CIImage(image: image)
+            let sepiaColor = [kCIInputIntensityKey: (range)]
+            let filteredImage = beginImage?.imageByApplyingFilter(filter, withInputParameters: sepiaColor)
+            let renderedImage = context.createCGImage(filteredImage!, fromRect: (filteredImage?.extent)!)
+            imageView.image = UIImage(CGImage: renderedImage)
+        }
+    }
+    
     func sepiaEffect() {
         let beginImage = CIImage(image: image)
         
         let sepiaColor = [kCIInputIntensityKey: (0.5)]
         let filteredImage = beginImage?.imageByApplyingFilter("CISepiaTone", withInputParameters: sepiaColor)
-        let renderedImage = context.createCGImage(filteredImage!, fromRect: (filteredImage?.extent)!)
-        imageView.image = UIImage(CGImage: renderedImage)
-    }
-    
-    func monoEffect() {
-        let beginImage = CIImage(image: image)
-        let filteredImage = beginImage?.imageByApplyingFilter("CIPhotoEffectMono", withInputParameters: nil)
-        let renderedImage = context.createCGImage(filteredImage!, fromRect: (filteredImage?.extent)!)
-        imageView.image = UIImage(CGImage: renderedImage)
-    }
-    
-    func invertEffect() {
-        let beginImage = CIImage(image: image)
-        let filteredImage = beginImage?.imageByApplyingFilter("CIColorInvert", withInputParameters: nil)
         let renderedImage = context.createCGImage(filteredImage!, fromRect: (filteredImage?.extent)!)
         imageView.image = UIImage(CGImage: renderedImage)
     }
@@ -154,9 +178,6 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     func setThumb(tempImage: UIImage) {
         self.imageView.image = tempImage
         self.image = tempImage
-        self.invertImageView.image = tempImage
-        self.sepiaImageView.image = tempImage
-        self.monoImageView.image = tempImage
     }
 }
 
