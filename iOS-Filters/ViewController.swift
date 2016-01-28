@@ -21,7 +21,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     
     let context = CIContext(options: nil)
     
-    let pickerData = ["SepiaEffect", "MonoEffect", "InstantEffect", "ChromeEffect", "FadeEffect", "MonochromeEffect"]
+    let pickerData = ["SepiaEffect", "MonoEffect", "InstantEffect", "ChromeEffect", "FadeEffect", "MonochromeEffect", "NoirEffect", "ProcessEffect", "TonalEffect", "TransferEffect"]
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -64,6 +64,15 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         case "FadeEffect" : self.filter("CIPhotoEffectFade")
             break
         case "MonochromeEffect" : rangefilter("CIColorMonochrome", range: 0.5)
+            break
+        case "NoirEffect" : self.filter("CIPhotoEffectNoir")
+            break
+        case "ProcessEffect" : self.filter("CIPhotoEffectProcess")
+            break
+        case "TonalEffect" : self.filter("CIPhotoEffectTonal")
+            break
+        case "TransferEffect" : self.filter("CIPhotoEffectTransfer")
+            break
         default : break
         }
     }
